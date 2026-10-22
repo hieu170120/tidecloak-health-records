@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+keycloakdb*.db
+tidecloak.json
+.env*
+!.env.example
+!init/.env.example
+
