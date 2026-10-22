@@ -9,3 +9,6 @@ tidecloak.json
 !.env.docker.example
 !init/.env.example
 docker-compose.yml
+
+.secrets/
+api/dist/

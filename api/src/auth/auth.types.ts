@@ -8,6 +8,8 @@ export interface AuthenticatedUser {
 }
 
 export interface AuthenticatedRequest {
+  method: string;
+  originalUrl: string;
   headers: Record<string, string | string[] | undefined>;
   user?: AuthenticatedUser;
 }

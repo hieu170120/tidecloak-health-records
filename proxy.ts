@@ -21,7 +21,7 @@ export const proxy = createTideCloakProxy({
   onFailure: (ctx: { token: string | null }, req: NextRequest) => {
     console.debug("Token verification failed", {
       path: req.nextUrl.pathname,
-      ctx,
+      tokenPresent: Boolean(ctx.token),
     });
     return NextResponse.json(
       { error: "Access forbidden: invalid token" },

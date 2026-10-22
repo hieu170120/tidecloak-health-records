@@ -99,6 +99,7 @@ export default function HomePage() {
   return (
     <div style={containerStyle}>
       <div style={cardStyle}>
+        <a href="/patient/emergency-capsule">Emergency Capsule của bệnh nhân</a>
         <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Hello, {username}!</h1>
         <p style={{ margin: '0.5rem 0', color: '#555' }}>
           Has default roles? <strong>{hasDefaultRole ? 'Yes' : 'No'}</strong>

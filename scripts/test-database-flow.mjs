@@ -1,0 +1,20 @@
+import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const db='health_it_'+randomUUID().replaceAll('-','');
+function run(args,input){const r=spawnSync('docker',['compose',...args],{cwd:root,input,encoding:'utf8',maxBuffer:8*1024*1024});if(r.status!==0)throw Error((r.stderr||'')+(r.stdout||''));return r.stdout;}
+run(['exec','-T','postgres','sh','-c','psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'],`CREATE DATABASE ${db};`);
+const psql=['exec','-T','-e',`TEST_DATABASE_NAME=${db}`,'postgres','sh','-c','psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$TEST_DATABASE_NAME"'];
+run(psql,readFileSync(root+'database/init/10-schema.sql','utf8')+'\n'+readFileSync(root+'database/init/20-permissions.sql','utf8'));
+const migration=spawnSync(process.execPath,[root+'scripts/migrate.mjs'],{cwd:root,env:{...process.env,MIGRATION_DATABASE:db},encoding:'utf8'});
+if(migration.status!==0)throw Error(migration.stderr+ migration.stdout);
+const twice=spawnSync(process.execPath,[root+'scripts/migrate.mjs'],{cwd:root,env:{...process.env,MIGRATION_DATABASE:db},encoding:'utf8'});
+if(twice.status!==0 || !twice.stdout.includes('Already applied'))throw Error('Migration rerun failed');
+console.log('PASS migrations apply once and rerun safely. Isolated DB:',db);
+process.stdout.write(run(['exec','-T','-e',`TEST_DATABASE_NAME=${db}`,'api','node'],readFileSync(root+'api/test/integration.cjs','utf8')));
+const chainResult=run(psql,`SELECT count(*) AS broken_links FROM (SELECT previous_hash,lag(event_hash) OVER(ORDER BY chain_sequence) AS expected,event_hash,canonical_event FROM health.audit_events) x WHERE previous_hash IS DISTINCT FROM expected OR event_hash <> public.digest(convert_to(canonical_event,'UTF8'),'sha256');`);
+if (!/\n\s*0\s*\n/.test(chainResult)) throw Error('Global audit chain check failed: '+chainResult);
+console.log('PASS global audit chain continuity and canonical hashes');
+console.log('Synthetic test database retained for inspection; application database untouched.');

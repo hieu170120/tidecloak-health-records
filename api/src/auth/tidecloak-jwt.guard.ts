@@ -28,11 +28,13 @@ export class TideCloakJwtGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const authorization = request.headers.authorization;
     const header = Array.isArray(authorization) ? authorization[0] : authorization;
-    if (!header?.startsWith('Bearer ')) {
-      throw new UnauthorizedException('A Bearer access token is required');
-    }
-
-    request.user = await this.jwtService.verify(header.slice('Bearer '.length));
+    const match=header?.match(/^(Bearer|DPoP) ([^\s]+)$/);
+    if (!match) throw new UnauthorizedException('An access token is required');
+    const proof=request.headers.dpop;
+    if (Array.isArray(proof)) throw new UnauthorizedException('A single DPoP proof is required');
+    request.user = await this.jwtService.verify(match[2], {
+      scheme:match[1],proof,method:request.method,path:request.originalUrl,
+    });
     return true;
   }
 }

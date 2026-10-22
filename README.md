@@ -22,7 +22,7 @@ docker compose up -d
 docker compose ps
 ```
 
-PostgreSQL is available only on `127.0.0.1:5432`. Change every value in
+PostgreSQL is available only on `127.0.0.1:5433`. Change every value in
 `.env.docker` before using this outside local development.
 
 Docker initializes the `health` schema once, when the PostgreSQL volume is
@@ -58,3 +58,17 @@ client.
 
 To reset local Docker data intentionally, stop the stack and remove its named
 volumes. This permanently deletes the local development data.
+
+## Patient capsule milestone
+
+Identity mapping, owner-only encrypted capsule versioning and transaction-coupled local audit are now implemented. See [database setup and API contract](docs/database-next-steps.md). This does not yet implement doctor sharing or Break-Glass.
+
+```sh
+node scripts/configure-local-api.mjs
+node scripts/migrate.mjs
+docker compose up -d --build api
+node scripts/test-database-flow.mjs
+npm run dev
+```
+
+Open `/patient/emergency-capsule`. Real Tide realm roles/login must be verified; the integration suite uses an isolated test database and local signed JWT fixtures, never an authentication bypass on the live API. Keep `.env.api` and `.secrets/` out of Git.
