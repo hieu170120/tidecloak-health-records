@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+: "${APP_DB_PASSWORD:?APP_DB_PASSWORD is required}"
+: "${AUDIT_DB_PASSWORD:?AUDIT_DB_PASSWORD is required}"
+
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" \
+  --set=app_db_password="$APP_DB_PASSWORD" \
+  --set=audit_db_password="$AUDIT_DB_PASSWORD" <<'SQL'
+CREATE ROLE app_runtime LOGIN PASSWORD :'app_db_password' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
+CREATE ROLE audit_writer LOGIN PASSWORD :'audit_db_password' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
+CREATE ROLE audit_verifier NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT;
+SQL

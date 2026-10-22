@@ -6,5 +6,9 @@ keycloakdb*.db
 tidecloak.json
 .env*
 !.env.example
+!.env.docker.example
 !init/.env.example
+docker-compose.yml
 
+.secrets/
+api/dist/

@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "init": "bash init/tcinit.sh"
+    "init": "bash init/tcinit.sh",
+    "configure:api": "node scripts/configure-local-api.mjs",
+    "db:migrate": "node scripts/migrate.mjs",
+    "test:db": "node scripts/test-database-flow.mjs"
   },
   "dependencies": {
     "next": "16.x",

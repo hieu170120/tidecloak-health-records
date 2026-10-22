@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks:
+      - health_data
+
+  api:
+    build:
+      context: ./api
+    restart: unless-stopped
+    env_file:
+      - .env.api
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_USER: app_runtime
+      PORT: "3001"
+    secrets:
+      - audit_signing_key
+    ports:
+      - "127.0.0.1:3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - health_data
+
+volumes:
+  postgres_data:
+
+networks:
+  health_data:
+    driver: bridge
+
+secrets:
+  audit_signing_key:
+    file: ./.secrets/audit-signing-key.pem
