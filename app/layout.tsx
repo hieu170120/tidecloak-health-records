@@ -1,14 +1,11 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import {
-  TideCloakProvider
-} from '@tidecloak/nextjs'
-import tcConfig from '../tidecloak.json'
-
+import { TideCloakSimulatorProvider } from '../lib/auth/tidecloak-simulator'
+import PersonaBar from '../components/PersonaBar'
 
 export const metadata: Metadata = {
-  title: 'My Tidecloak App',
-  description: 'A Next.js starter with Tidecloak',
+  title: 'TideCloak Secure Health Records (Healthcare IAM)',
+  description: 'Protecting clinical records with decentralized TideCloak cryptography, DPoP RFC 9449, and tag-based consent policies.',
 }
 
 interface RootLayoutProps {
@@ -18,10 +15,11 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body>
-        <TideCloakProvider config={tcConfig}>
+      <body style={{ margin: 0, padding: 0, backgroundColor: '#f8fafc', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+        <TideCloakSimulatorProvider>
+          <PersonaBar />
           {children}
-        </TideCloakProvider>
+        </TideCloakSimulatorProvider>
       </body>
     </html>
   )
